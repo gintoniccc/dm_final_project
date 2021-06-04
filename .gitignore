@@ -1,4 +1,6 @@
 data/
 models/
 cache/
+ckpt/
+project_env/
 .ipynb_checkpoints
