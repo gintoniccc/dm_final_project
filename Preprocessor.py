@@ -25,7 +25,7 @@ class Preprocessor(object):
 		
 		return chats,ban
 
-	def sample(self,tokenizer,sample_rate = None):
+	def sample(self,sample_rate = None):
 		if not sample_rate:
 			sample_rate = self.args.sample_rate
 
@@ -33,7 +33,7 @@ class Preprocessor(object):
 		normal_sample = self.chats[self.chats['banned']==False].sample((sample_rate*len(banned_sample)))
 		sample_chats = normal_sample.append(banned_sample, ignore_index=True)
 
-		dataset = Vtuber_Dataset(sample_chats,tokenizer,self.args.max_length)
+		dataset = Vtuber_Dataset(sample_chats)
 		trainsize = int(self.args.trainsize_ratio*len(dataset))
 		validsize = len(dataset) - trainsize
 		trainset, valset = torch.utils.data.random_split(dataset, [trainsize, validsize])
@@ -43,29 +43,13 @@ class Preprocessor(object):
 
 class Vtuber_Dataset(Dataset):
 	"""docstring for Vtuber_Dataset"""
-	def __init__(self,df,tokenizer,max_length = 512):
+	def __init__(self,df):
 		super(Vtuber_Dataset, self).__init__()
 		self.df = df
-		self.tokenizer = tokenizer
-		self.max_length = max_length
 	def __getitem__(self,idx):
-		body = self.df.loc[idx,"body"][:self.max_length]
+		body = self.df.loc[idx,"body"]
 		target = torch.tensor(self.df.loc[idx,"banned"],dtype = torch.long)
-		res = self.tokenizer(body, return_tensors="pt",padding = "max_length")
-		input_ids = res["input_ids"].squeeze(0)
-		att_mask  = res["attention_mask"].squeeze(0)
-		try:
-			assert input_ids.shape[0] == self.max_length
-		except:
-			print(f"error found,input_ids_shape:{input_ids.shape[0]}")
-			body = self.df.loc[idx+1,"body"]
-			target = torch.tensor(self.df.loc[idx+1,"banned"])
-			res = self.tokenizer(body, return_tensors="pt",padding = "max_length")
-			input_ids = res["input_ids"].squeeze(0)
-			att_mask  = res["attention_mask"].squeeze(0)
-			
-		return input_ids,att_mask,target
-
+		return body,target
 
 	def __len__(self):
 		return len(self.df)

@@ -4,3 +4,4 @@ cache/
 ckpt/
 project_env/
 .ipynb_checkpoints
+__pychach__/

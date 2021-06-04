@@ -22,9 +22,10 @@ class Vtu_model(nn.Module):
 
 class Trainer(object):
 	"""docstring for Trainer"""
-	def __init__(self, backbone,train_loader,valid_loader, args):
+	def __init__(self, backbone,tokenizer,train_loader,valid_loader, args):
 		super(Trainer, self).__init__()
 		self.model = Vtu_model(backbone,args).to(device)
+		self.tokenizer = tokenizer
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.args = args
@@ -36,12 +37,11 @@ class Trainer(object):
 	def train(self):
 		for epo in range(self.args.epoch_num):
 			avg_loss = 0
-			for input_ids,att_mask,label in tqdm(self.train_loader):
+			for body,label in tqdm(self.train_loader):
+				inputs = self.tokenizer(body,padding=True, truncation=True,max_length = self.args.max_length,return_tensors="pt",verbose=False)
+				for k,v in inputs.items():
+					inputs[k] = v.to(device)
 				label = label.to(device)
-				inputs = {
-				"input_ids":input_ids.to(device),
-				"attention_mask":att_mask.to(device)
-				}
 				self.optimizer.zero_grad()
 				pred = self.model(**inputs)
 				loss = self.critique(pred,label)
@@ -59,12 +59,11 @@ class Trainer(object):
 	def eval(self):
 		eval_loss = 0
 		with torch.no_grad():
-			for input_ids,att_mask,label in tqdm(self.valid_loader):
+			for body,label in tqdm(self.valid_loader):
+				inputs = self.tokenizer(body,padding=True, truncation=True,max_length = self.args.max_length,return_tensors="pt",verbose=False)
+				for k,v in inputs.items():
+					inputs[k] = v.to(device)
 				label = label.to(device)
-				inputs = {
-				"input_ids":input_ids.to(device),
-				"attention_mask":att_mask.to(device)
-				}
 				pred = self.model(**inputs)
 				loss = self.critique(pred,label)
 				eval_loss += loss.item()

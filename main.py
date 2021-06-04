@@ -15,8 +15,8 @@ def main(args):
 	with Timer("parse data and sampling.."):
 		P = Preprocessor(args)
 		##Todo resample for several batch ?
-		train_loader,valid_loader = P.sample(tokenizer,args.sample_rate) #may change to train,valid,test
-	trainer = Trainer(backbone,train_loader,valid_loader, args)
+		train_loader,valid_loader = P.sample(args.sample_rate) #may change to train,valid,test
+	trainer = Trainer(backbone,tokenizer,train_loader,valid_loader, args)
 	trainer.train()
 
 	#Todo:
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('--chat_df_path',default='./data/chats_2021-05.csv')
 	parser.add_argument('--ban_df_path',default='./data/ban_events.csv')
-	parser.add_argument('--batch_size',default=16,type=int)
+	parser.add_argument('--batch_size',default=32,type=int)
 	parser.add_argument('--lr',default = 1e-4)
 	parser.add_argument('--epoch_num',default=8,type=int)
 	parser.add_argument('--sample_rate',default=2,type=int)
