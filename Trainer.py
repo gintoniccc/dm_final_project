@@ -1,6 +1,8 @@
+import os
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+import logging
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class Vtu_model(nn.Module):
@@ -49,10 +51,11 @@ class Trainer(object):
 				avg_loss += loss.item()
 				self.optimizer.step()
 			print(f"epo:{epo} | avg_loss:{avg_loss/len(self.train_loader)}")
+			logging.info('epo:%s | avg_loss:%s', epo, avg_loss/len(self.train_loader))
 			if epo % self.args.eval_step == 0:
 				eval_loss = self.eval()
 				print(f"epo:{epo} | eval_loss:{eval_loss/len(self.valid_loader)}")
-
+				logging.info('epo:%s | avg_loss:%s', epo, eval_loss/len(self.valid_loader))				
 				if self.best_eval_loss == None or eval_loss < self.best_eval_loss:
 					self.save()
 					self.best_eval_loss = eval_loss
@@ -72,6 +75,8 @@ class Trainer(object):
 	def save(self,save_path = None,file_name = "Vtu_model.pt"):
 		if save_path == None:
 			save_path = self.args.ckpt_path
+			if not os.path.exists(args.ckpt_path):
+				os.makedirs(args.ckpt_path)
 		print('save model to', save_path+file_name)
 		torch.save(self.model.state_dict(), save_path + file_name)
 	def load(self,load_path = None,file_name = "Vtu_model.pt"):
