@@ -33,7 +33,7 @@ class Trainer(object):
 		self.args = args
 
 		self.optimizer = torch.optim.Adam(self.model.parameters(),lr = self.args.lr)
-		self.critique = nn.CrossEntropyLoss()#Here maybe can design class weight
+		self.critique = nn.CrossEntropyLoss(weight = torch.tensor([1,self.args.sample_rate],dtype = torch.float).to(device))#Here maybe can design class weight
 
 		self.best_eval_loss = None
 	def train(self):
@@ -75,8 +75,8 @@ class Trainer(object):
 	def save(self,save_path = None,file_name = "Vtu_model.pt"):
 		if save_path == None:
 			save_path = self.args.ckpt_path
-			if not os.path.exists(args.ckpt_path):
-				os.makedirs(args.ckpt_path)
+			if not os.path.exists(self.args.ckpt_path):
+				os.makedirs(self.args.ckpt_path)
 		print('save model to', save_path+file_name)
 		torch.save(self.model.state_dict(), save_path + file_name)
 	def load(self,load_path = None,file_name = "Vtu_model.pt"):
