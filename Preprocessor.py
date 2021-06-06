@@ -7,23 +7,33 @@ class Preprocessor(object):
 	def __init__(self, args):
 		super(Preprocessor, self).__init__()
 		self.args = args
-		self.chats,self.ban = self.preprocess()
+		self.chats,self.delet = self.preprocess()
 		# Todo
 		# Maybe can add labelencoder to add some feature from other column
 		
 
 	def load_file(self):
 		chat_df = pd.read_csv(self.args.chat_df_path,na_values='', keep_default_na=False)
-		ban_df  = pd.read_csv(self.args.ban_df_path, usecols=['channelId', 'originVideoId'],na_values='', keep_default_na=False)
-		ban_df['banned'] = 1
-		return chat_df,ban_df
+		#ban_df  = pd.read_csv(self.args.ban_df_path, usecols=['channelId', 'originVideoId'],na_values='', keep_default_na=False)
+
+		delet = pd.read_csv(self.args.delete_df_path,
+							usecols=['id', 'retracted'])
+
+		delet = delet[delet['retracted'] == 0]
+
+		delet['banned'] = True
+		
+		#ban_df['banned'] = 1
+		return chat_df,delet
 
 	def preprocess(self):
-		chats,ban = self.load_file()
-		chats = pd.merge(chats, ban, on=['channelId', 'originVideoId'], how='left')
-		chats['banned'].fillna(0, inplace=True)
+		chats,delet = self.load_file()
+		chats = pd.merge(chats, delet[['id', 'banned']], how='left')
+		chats['banned'].fillna(False, inplace=True)
+		# chats = pd.merge(chats, delet, on=['channelId', 'originVideoId'], how='left')
+		# chats['banned'].fillna(0, inplace=True)
 		
-		return chats,ban
+		return chats,delet
 
 	def sample(self,sample_rate = None):
 		if not sample_rate:
@@ -37,7 +47,7 @@ class Preprocessor(object):
 		trainsize = int(self.args.trainsize_ratio*len(dataset))
 		validsize = len(dataset) - trainsize
 		trainset, valset = torch.utils.data.random_split(dataset, [trainsize, validsize])
-		train_loader,valid_loader = DataLoader(trainset,self.args.batch_size,drop_last = True),DataLoader(valset,self.args.batch_size)
+		train_loader,valid_loader = DataLoader(trainset,self.args.batch_size,drop_last = True,shuffle = True),DataLoader(valset,self.args.batch_size)
 		return train_loader,valid_loader
 
 

@@ -28,9 +28,9 @@ def main(args):
 if __name__ == '__main__':
 	parser = ArgumentParser()
 	parser.add_argument('--chat_df_path',default='./data/chats_2021-05.csv')
-	parser.add_argument('--ban_df_path',default='./data/ban_events.csv')
-	parser.add_argument('--batch_size',default=32,type=int)
-	parser.add_argument('--lr',default = 1e-4)
+	parser.add_argument('--delete_df_path',default='./data/deletion_events.csv')
+	parser.add_argument('--batch_size',default=64,type=int)
+	parser.add_argument('--lr',default = 1e-3)
 	parser.add_argument('--epoch_num',default=8,type=int)
 	parser.add_argument('--sample_rate',default=2,type=int)
 	parser.add_argument('--trainsize_ratio',default = 0.9)

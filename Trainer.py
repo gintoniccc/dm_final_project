@@ -37,7 +37,7 @@ class Trainer(object):
 	def train(self):
 		for epo in range(self.args.epoch_num):
 			avg_loss = 0
-			for body,label in tqdm(self.train_loader):
+			for body,label in (self.train_loader):
 				inputs = self.tokenizer(body,padding=True, truncation=True,max_length = self.args.max_length,return_tensors="pt",verbose=False)
 				for k,v in inputs.items():
 					inputs[k] = v.to(device)
@@ -59,7 +59,7 @@ class Trainer(object):
 	def eval(self):
 		eval_loss = 0
 		with torch.no_grad():
-			for body,label in tqdm(self.valid_loader):
+			for body,label in (self.valid_loader):
 				inputs = self.tokenizer(body,padding=True, truncation=True,max_length = self.args.max_length,return_tensors="pt",verbose=False)
 				for k,v in inputs.items():
 					inputs[k] = v.to(device)
