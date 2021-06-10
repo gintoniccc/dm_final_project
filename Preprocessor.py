@@ -7,7 +7,7 @@ class Preprocessor(object):
 	def __init__(self, args):
 		super(Preprocessor, self).__init__()
 		self.args = args
-		self.chats,self.delet = self.preprocess()
+		#self.chats,self.delet = self.preprocess()
 		# Todo
 		# Maybe can add labelencoder to add some feature from other column
 		
@@ -32,8 +32,8 @@ class Preprocessor(object):
 		chats['banned'].fillna(False, inplace=True)
 		# chats = pd.merge(chats, delet, on=['channelId', 'originVideoId'], how='left')
 		# chats['banned'].fillna(0, inplace=True)
-		
-		return chats,delet
+		self.chats,self.delet = chats,delet
+		return 
 
 	def sample(self,sample_rate = None):
 		if not sample_rate:
@@ -42,14 +42,17 @@ class Preprocessor(object):
 		banned_sample = self.chats[self.chats['banned']==True]
 		normal_sample = self.chats[self.chats['banned']==False].sample((sample_rate*len(banned_sample)))
 		sample_chats = normal_sample.append(banned_sample, ignore_index=True)
-
+		sample_chats.to_csv(self.args.sample_chat_path)
+		return sample_chats
+	def create_dataloader(self,sample_chats):
 		dataset = Vtuber_Dataset(sample_chats)
 		trainsize = int(self.args.trainsize_ratio*len(dataset))
-		validsize = len(dataset) - trainsize
-		trainset, valset = torch.utils.data.random_split(dataset, [trainsize, validsize])
-		train_loader,valid_loader = DataLoader(trainset,self.args.batch_size,drop_last = True,shuffle = True),DataLoader(valset,self.args.batch_size)
-		return train_loader,valid_loader
+		testsize = int(self.args.testsize_ratio*len(dataset))
+		validsize = len(dataset) - trainsize -testsize
+		trainset, valset ,testset = torch.utils.data.random_split(dataset, [trainsize, validsize , testsize])
+		train_loader,valid_loader,test_loader = DataLoader(trainset,self.args.batch_size,drop_last = True,shuffle = True),DataLoader(valset,self.args.batch_size),DataLoader(testset,self.args.batch_size)
 
+		return train_loader,valid_loader,test_loader
 
 class Vtuber_Dataset(Dataset):
 	"""docstring for Vtuber_Dataset"""

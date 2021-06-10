@@ -3,6 +3,7 @@ import numpy as np
 import os
 import time
 from argparse import ArgumentParser
+from sklearn.metrics import f1_score,roc_auc_score
 def set_seed(seed):
 	torch.manual_seed(seed)
 	torch.cuda.manual_seed_all(seed)
@@ -10,6 +11,14 @@ def set_seed(seed):
 	torch.backends.cudnn.benchmark = False
 	np.random.seed(seed)
 	os.environ['PYTHONHASHSEED'] = str(seed)
+
+
+
+def evaluate_perform(y_pred,y_true):
+	f1 = f1_score(y_true, y_pred)
+	auroc = roc_auc_score(y_true, y_pred)
+	print(f"f1:{f1} | auroc:{auroc}")
+	return f1,auroc
 
 
 
